@@ -1,0 +1,223 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*rule  CustomerTransaction{
+    description: "only customers can do account transfer"
+    participant: "test.Customer"
+    operation: CREATE, READ
+    resource: "test.AccountTransfer"
+    action: ALLOW
+}*/
+
+rule managerCanMakeProfilesOfCustomers{
+   description: "manager will make profiles of customers"
+   participant: "test.BankManager"
+   operation: ALL
+   resource: "test.Customer"
+   action: ALLOW
+}
+
+rule managerCanMakeProfilesOfEmployees{
+   description: "manager will make profiles of employees"
+   participant: "test.BankManager"
+   operation: ALL
+   resource: "test.Employee"
+   action: ALLOW
+}
+rule managerCanOnlyMakeWalletOfEmployee{
+  description: "only manager can make wallets of employees"
+  participant: "test.BankManager"
+  operation: CREATE
+  resource: "test.wallet"
+  action: ALLOW
+}
+rule managerCanOnlyMakeAccountOfCustomers{
+  description: "only manager can make accounts of customers"
+  participant: "test.BankManager"
+  operation: CREATE
+  resource: "test.Account"
+  action: ALLOW
+}
+rule employeeCanOnlySeeHisProfile{
+  description: "employee will see only his profile"
+  participant(p): "test.Employee"
+  operation: READ
+  resource(r): "test.Employee"
+  condition: (p.getIdentifier() == r.getIdentifier())
+  action: ALLOW
+}
+
+rule employeesCanReadTheirOwnWallet {
+	description: "each employees can only read their own wallet"
+    participant(p): "test.Employee"
+    operation: READ
+    resource(r): "test.wallet"
+  	condition: (p.wallet.getIdentifier() == r.getIdentifier())
+    action: ALLOW
+}
+
+rule managerCanOnlyTransferFunds{
+  description: "amount in fund comes only from manager wallet"
+  participant:"test.BankManager"
+  operation: ALL
+  resource: "test.Funds"
+  action: ALLOW
+}
+
+rule managerCanSubmitFundTransferTransaction {
+  description: "only customers can do account transfer"
+  participant:"test.BankManager"
+  operation: ALL
+  resource: "test.fundsTransfer"
+  action: ALLOW  
+}
+
+rule mangerCanAccessHisOwnWallet {
+  description: "manager can access his own wallet only during fund transfer"
+  participant: "test.BankManager"
+  operation: ALL
+  resource: "test.wallet"
+  transaction: "test.fundsTransfer"
+  action: ALLOW
+}
+
+rule customerCanOnlySeeHisProfile{
+  description: "each customer can see only his profile"
+  participant(p): "test.Customer"
+  operation: READ
+  resource(r): "test.Customer"
+  condition: (p.getIdentifier() == r.getIdentifier())
+  action: ALLOW
+}
+
+rule customerCanReadTheirOwnAccount {
+	description: "each Customer can only read their own account"
+    participant(p): "test.Customer"
+    operation: READ
+    resource(r): "test.Account"
+  	condition: (p.account.getIdentifier() == r.getIdentifier())
+    action: ALLOW
+}
+
+rule CustomerCanOnlyDoAccountTransfer{
+  description: "only customers can do account transfer"
+  participant:"test.Customer"
+  operation: ALL
+  resource: "test.AccountTransfer"
+  action: ALLOW
+}
+
+rule customerCanAccessHisOwnAccount {
+  description: "customer can access his own account only during fund transfer"
+  participant: "test.Customer"
+  operation: ALL
+  resource: "test.Account"
+  transaction: "test.AccountTransfer"
+  action: ALLOW
+}
+
+rule ManagerCanSeeHisOwnProfile{
+  description: "manager can see only his profile"
+  participant(p): "test.BankManager"
+  operation: READ
+  resource(r): "test.BankManager"
+  condition: (p.getIdentifier() == r.getIdentifier())
+  action: ALLOW
+}
+
+rule managerCanReadTheirOwnWallet {
+	description: "each manager can only read their own wallet"
+    participant(p): "test.BankManager"
+    operation: READ
+    resource(r): "test.wallet"
+  	condition: (p.wallet.getIdentifier() == r.getIdentifier())
+    action: ALLOW
+}
+
+rule employeeCanOnlyTakeMoneyFromFund{
+  description: "money from fund can be withdrawn by employee only"
+  participant: "test.Employee"
+  operation: ALL
+  resource: "test.Funds"
+  transaction:"test.salaryEmployees"
+  action: ALLOW
+}
+
+rule EmployeeCanOnlyDoSalaryTransfer{
+  description: "only employee can do salary transfer"
+  participant:"test.Employee"
+  operation: ALL
+  resource: "test.salaryEmployees"
+  action: ALLOW
+}
+
+rule EmployeeCanAccessHisOwnWallet {
+  description: "employee can access his own wallet only during fund transfer"
+  participant: "test.Employee"
+  operation: ALL
+  resource: "test.wallet"
+  transaction: "test.salaryEmployees"
+  action: ALLOW
+}
+
+rule EmployeeCanUpdateHisOwnProfileDuringTransaction{
+  description: "Employee CanUpdate His Own Profile During Transaction"
+  participant: "test.Employee"
+  operation: ALL
+  resource: "test.Employee"
+  transaction: "test.salaryEmployees"
+  action: ALLOW
+}
+
+rule ManagerOnlyCanChangeStatus{
+  description:"Only manager can call the function to change the salary status"
+  participant: "test.BankManager"
+  operation: ALL
+  resource: "test.statusChange"
+  action: ALLOW
+}
+rule ManagerCanUpdateStatus{
+  description: "Manager can update employee's salary status from PAID to UNPAID"
+  participant: "test.BankManager"
+  operation: ALL
+  resource: "test.Employee"
+  transaction: "test.statusChange"
+  action: ALLOW
+}
+rule SystemACL {
+    description: "System ACL to permit all access"
+    participant: "org.hyperledger.composer.system.Participant"
+    operation: ALL
+    resource: "org.hyperledger.composer.system.**"
+    action: ALLOW
+}
+
+rule NetworkAdminUser {
+    description: "Grant business network administrators full access to user resources"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: ALL
+    resource: "**"
+    action: ALLOW
+}
+
+rule NetworkAdminSystem {
+    description: "Grant business network administrators full access to system resources"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: ALL
+    resource: "org.hyperledger.composer.system.**"
+    action: ALLOW
+}
+
+
+
+           
